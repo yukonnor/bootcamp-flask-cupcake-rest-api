@@ -1,31 +1,28 @@
 from unittest import TestCase
 
-from app import app
-from models import db, Cupcake
+from app import create_app
+from models import db, connect_db, Cupcake
 
-# Use test database and don't clutter tests with SQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes_test'
-app.config['SQLALCHEMY_ECHO'] = False
+app = create_app("cupcakes_test", testing=True)
+connect_db(app)
 
-# Make Flask errors be real errors, rather than HTML pages with error info
-app.config['TESTING'] = True
-
-db.drop_all()
-db.create_all()
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
 
 CUPCAKE_DATA = {
     "flavor": "TestFlavor",
     "size": "TestSize",
     "rating": 5,
-    "image": "http://test.com/cupcake.jpg"
+    "image_url": "http://test.com/cupcake.jpg"
 }
 
 CUPCAKE_DATA_2 = {
     "flavor": "TestFlavor2",
     "size": "TestSize2",
     "rating": 10,
-    "image": "http://test.com/cupcake2.jpg"
+    "image_url": "http://test.com/cupcake2.jpg"
 }
 
 
@@ -35,18 +32,21 @@ class CupcakeViewsTestCase(TestCase):
     def setUp(self):
         """Make demo data."""
 
-        Cupcake.query.delete()
+        with app.app_context():
 
-        cupcake = Cupcake(**CUPCAKE_DATA)
-        db.session.add(cupcake)
-        db.session.commit()
+            Cupcake.query.delete()
 
-        self.cupcake = cupcake
+            cupcake = Cupcake(**CUPCAKE_DATA)
+            db.session.add(cupcake)
+            db.session.commit()
+
+            self.cupcake = Cupcake.query.first()
 
     def tearDown(self):
         """Clean up fouled transactions."""
 
-        db.session.rollback()
+        with app.app_context():
+            db.session.rollback()
 
     def test_list_cupcakes(self):
         with app.test_client() as client:
@@ -55,6 +55,11 @@ class CupcakeViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
 
             data = resp.json
+
+            # Remove the timestamp from the json so that we can test (assertEqual) the rest of the json
+            del data['cupcakes'][0]['created_at']
+
+
             self.assertEqual(data, {
                 "cupcakes": [
                     {
@@ -62,7 +67,7 @@ class CupcakeViewsTestCase(TestCase):
                         "flavor": "TestFlavor",
                         "size": "TestSize",
                         "rating": 5,
-                        "image": "http://test.com/cupcake.jpg"
+                        "image_url": "http://test.com/cupcake.jpg"
                     }
                 ]
             })
@@ -74,13 +79,17 @@ class CupcakeViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             data = resp.json
+
+            # Remove the timestamp from the json so that we can test (assertEqual) the rest of the json
+            del data['cupcake']['created_at']
+
             self.assertEqual(data, {
                 "cupcake": {
                     "id": self.cupcake.id,
                     "flavor": "TestFlavor",
                     "size": "TestSize",
                     "rating": 5,
-                    "image": "http://test.com/cupcake.jpg"
+                    "image_url": "http://test.com/cupcake.jpg"
                 }
             })
 
@@ -93,6 +102,9 @@ class CupcakeViewsTestCase(TestCase):
 
             data = resp.json
 
+            # Remove the timestamp from the json so that we can test (assertEqual) the rest of the json
+            del data['cupcake']['created_at']
+
             # don't know what ID we'll get, make sure it's an int & normalize
             self.assertIsInstance(data['cupcake']['id'], int)
             del data['cupcake']['id']
@@ -102,7 +114,7 @@ class CupcakeViewsTestCase(TestCase):
                     "flavor": "TestFlavor2",
                     "size": "TestSize2",
                     "rating": 10,
-                    "image": "http://test.com/cupcake2.jpg"
+                    "image_url": "http://test.com/cupcake2.jpg"
                 }
             })
 
