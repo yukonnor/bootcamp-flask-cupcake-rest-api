@@ -15,6 +15,12 @@ def create_app(db_name, testing=False, developing=False):
         app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 
+    @app.route('/')
+    def home():
+        """Show list of cupcakes on front end and show form to add cupcakes, all managed via AJAX."""
+
+        return render_template('index.html')
+    
     @app.route('/api/cupcakes')
     def list_cupcakes():
         """Returns JSON payload w/ all cupcakes"""
@@ -69,7 +75,7 @@ def create_app(db_name, testing=False, developing=False):
 
         cupcake = Cupcake.query.get_or_404(id)
         db.session.delete(cupcake)
-        
+
         db.session.commit()
 
         return jsonify(message="deleted")
