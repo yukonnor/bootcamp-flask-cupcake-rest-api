@@ -1,5 +1,5 @@
 """Flask app for Cupcakes API"""
-from flask import Flask, request, render_template,  redirect, flash, session
+from flask import Flask, request, jsonify, render_template,  redirect, flash, session
 from models import db, connect_db, Cupcake
 
 def create_app(db_name, testing=False, developing=False):
@@ -13,6 +13,33 @@ def create_app(db_name, testing=False, developing=False):
     if developing: 
         app.config['SQLALCHEMY_ECHO'] =  True
         app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+
+    # ROUTES:
+        
+    @app.route('/api/cupcakes')
+    def list_cupcakes():
+        """Returns JSON payload w/ all cupcakes"""
+        all_cupcakes = [cupcake.serialize() for cupcake in Cupcake.query.all()]
+        return jsonify(cupcakes=all_cupcakes)
+
+
+    @app.route('/api/cupcakes/<int:id>')
+    def get_cupcake(id):
+        """Returns JSON payload for one cupcake"""
+        cupcake = Cupcake.query.get_or_404(id)
+        return jsonify(cupcake=cupcake.serialize())
+
+
+    @app.route('/api/cupcakes', methods=["POST"])
+    def create_cupcake():
+        """Creates a new cupcake and returns JSON payload of that created cupcake"""
+        new_cupcake = Cupcake(title=request.json["title"])
+        db.session.add(new_cupcake)
+        db.session.commit()
+        response_json = jsonify(cupcake=new_cupcake.serialize())
+
+        # Return with a status code of 201 (Created) 
+        return (response_json, 201)
 
     return app
 
