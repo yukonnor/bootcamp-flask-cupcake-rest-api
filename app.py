@@ -45,6 +45,34 @@ def create_app(db_name, testing=False, developing=False):
 
         # Return with a status code of 201 (Created) 
         return (response_json, 201)
+    
+    @app.route('/api/cupcakes/<int:id>', methods=["PATCH"])
+    def update_cupcake(id):
+        """Updates a particular cupcake and responds w/ JSON of that updated cupcake"""
+
+        cupcake = Cupcake.query.get_or_404(id)
+
+        # See if request included these values (.get()). If not, set the current value. 
+        cupcake.flavor = request.json.get('flavor', cupcake.flavor)
+        cupcake.size = request.json.get('size',  cupcake.size)
+        cupcake.rating = request.json.get('rating',  cupcake.rating)
+        cupcake.image_url = request.json.get('image_url',  cupcake.image_url)
+
+        db.session.commit()
+
+        return jsonify(cupcake=cupcake.serialize())
+
+
+    @app.route('/api/cupcakes/<int:id>', methods=["DELETE"])
+    def delete_cupcake(id):
+        """Deletes a particular cupcake"""
+
+        cupcake = Cupcake.query.get_or_404(id)
+        db.session.delete(cupcake)
+        
+        db.session.commit()
+
+        return jsonify(message="deleted")
 
     return app
 
