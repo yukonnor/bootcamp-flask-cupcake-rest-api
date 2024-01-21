@@ -14,8 +14,7 @@ def create_app(db_name, testing=False, developing=False):
         app.config['SQLALCHEMY_ECHO'] =  True
         app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
-    # ROUTES:
-        
+
     @app.route('/api/cupcakes')
     def list_cupcakes():
         """Returns JSON payload w/ all cupcakes"""
@@ -33,7 +32,13 @@ def create_app(db_name, testing=False, developing=False):
     @app.route('/api/cupcakes', methods=["POST"])
     def create_cupcake():
         """Creates a new cupcake and returns JSON payload of that created cupcake"""
-        new_cupcake = Cupcake(title=request.json["title"])
+
+        # determine whether request includes image_url
+        if request.json.get('image_url'):
+            new_cupcake = Cupcake(flavor=request.json["flavor"], size=request.json["size"], image_url=request.json["image_url"], rating=request.json["rating"])
+        else:
+            new_cupcake = Cupcake(flavor=request.json["flavor"], size=request.json["size"], rating=request.json["rating"])
+        
         db.session.add(new_cupcake)
         db.session.commit()
         response_json = jsonify(cupcake=new_cupcake.serialize())
@@ -44,7 +49,7 @@ def create_app(db_name, testing=False, developing=False):
     return app
 
 if __name__ == '__main__':
-    app = create_app('blogly', developing=True)
+    app = create_app('cupcakes', developing=True)
     app.app_context().push() # remove when done testing
     connect_db(app)
     app.run(debug=True)      # show when done testing
