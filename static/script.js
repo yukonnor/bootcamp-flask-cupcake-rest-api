@@ -6,8 +6,26 @@ inputSize = $("#inputSize");
 inputRating = $("#inputRating");
 inputImgURL = $("#inputImgURL");
 
+async function getCupcakes() {
+    resp = await axios.get("/api/cupcakes");
+    cupcakes = resp.data.cupcakes;
+
+    console.log(cupcakes);
+
+    showCupcakes(cupcakes, cupcakesList);
+}
+
+function showCupcakes(cupcakes, destination) {
+    for (const cupcake of cupcakes) {
+        appendCupcake(cupcake, destination);
+    }
+}
+
 function appendCupcake(cupcake, destination) {
-    console.log("Todo: add cupcake to list.");
+    htmlString = `<b>Flavor:</b> ${cupcake.flavor} | <b>Size:</b> ${cupcake.size} | <b>Rating:</b> ${cupcake.rating}`;
+    newListItem = $("<li>").html(htmlString);
+
+    destination.append(newListItem);
 }
 
 async function createCupcake(event) {
@@ -31,3 +49,5 @@ async function createCupcake(event) {
 }
 
 $(document).on("submit", "#new-cupcake-form", createCupcake);
+
+getCupcakes();
