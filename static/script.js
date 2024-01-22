@@ -1,7 +1,9 @@
 newCupcakeForm = $("#new-cupcake-form");
+searchCupcakeForm = $("#search-cupcake-form");
 cupcakesList = $("#cupcakes-list");
 
 inputFlavor = $("#inputFlavor");
+inputSearchFlavor = $("#inputSearchFlavor");
 inputSize = $("#inputSize");
 inputRating = $("#inputRating");
 inputImgURL = $("#inputImgURL");
@@ -29,6 +31,10 @@ function appendCupcake(cupcake, destination) {
     destination.append(newListItem);
 }
 
+function clearListItems(list) {
+    list.empty();
+}
+
 async function createCupcake(event) {
     console.log("Form submitted!");
     event.preventDefault();
@@ -49,6 +55,24 @@ async function createCupcake(event) {
     return resp;
 }
 
+async function searchFlavor(event) {
+    console.log("Seaerch form submitted!");
+    event.preventDefault();
+
+    searchTerm = inputSearchFlavor.val();
+
+    resp = await axios.get("/cupcakes/search", { params: { search_term: searchTerm } });
+
+    cupcakes = resp.data.cupcakes;
+
+    console.log(resp);
+
+    clearListItems(cupcakesList);
+    showCupcakes(cupcakes, cupcakesList);
+
+    return resp;
+}
+
 async function deleteCupcake() {
     console.log("DELETE CUPCAKE");
     const id = $(this).data("id");
@@ -59,6 +83,7 @@ async function deleteCupcake() {
 // RUN SCRIPT:
 $(function () {
     $(document).on("submit", "#new-cupcake-form", createCupcake);
+    $(document).on("submit", "#search-cupcake-form", searchFlavor);
     getCupcakes();
     cupcakesList.on("click", ".delete-cupcake", deleteCupcake);
 });

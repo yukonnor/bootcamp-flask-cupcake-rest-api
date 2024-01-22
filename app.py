@@ -79,6 +79,16 @@ def create_app(db_name, testing=False, developing=False):
         db.session.commit()
 
         return jsonify(message="deleted")
+    
+    @app.route('/cupcakes/search')
+    def search_cupcake():
+        """Searches for a particular cupcake flavor and returns the cupcake data"""
+
+        search_term = request.args["search_term"]
+        
+        cupcakes = [cupcake.serialize() for cupcake in Cupcake.query.filter(Cupcake.flavor.ilike(search_term))]
+
+        return jsonify(cupcakes=cupcakes)
 
     return app
 

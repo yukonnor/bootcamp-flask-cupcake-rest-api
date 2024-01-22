@@ -16,6 +16,23 @@
     <body>
         <div class="container">
             <h1 class="text-center display-3">Cupcakes</h1>
+            <form id="search-cupcake-form" class="mt-2 mb-2">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="inputSearchFlavor"
+                            name="flavor"
+                            placeholder="Search for a cupcake flavor..."
+                            required
+                        />
+                    </div>
+                    <div class="col-sm-6">
+                        <button type="submit" class="btn btn-primary mb-2">Search</button>
+                    </div>
+                </div>
+            </form>
             <div class="row justify-content-center">
                 <div class="col-8">
                     <ul class="list-group" id="cupcakes-list"></ul>
