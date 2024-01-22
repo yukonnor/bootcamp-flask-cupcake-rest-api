@@ -22,7 +22,8 @@ function showCupcakes(cupcakes, destination) {
 }
 
 function appendCupcake(cupcake, destination) {
-    htmlString = `<b>Flavor:</b> ${cupcake.flavor} | <b>Size:</b> ${cupcake.size} | <b>Rating:</b> ${cupcake.rating}`;
+    buttonHTML = `<button class="delete-cupcake btn-sm btn-danger" data-id="${cupcake.id}">X</button>`;
+    htmlString = `<b>Flavor:</b> ${cupcake.flavor} | <b>Size:</b> ${cupcake.size} | <b>Rating:</b> ${cupcake.rating} - ${buttonHTML}`;
     newListItem = $("<li>").html(htmlString);
 
     destination.append(newListItem);
@@ -48,6 +49,16 @@ async function createCupcake(event) {
     return resp;
 }
 
-$(document).on("submit", "#new-cupcake-form", createCupcake);
+async function deleteCupcake() {
+    console.log("DELETE CUPCAKE");
+    const id = $(this).data("id");
+    await axios.delete(`/api/cupcakes/${id}`);
+    $(this).parent().remove();
+}
 
-getCupcakes();
+// RUN SCRIPT:
+$(function () {
+    $(document).on("submit", "#new-cupcake-form", createCupcake);
+    getCupcakes();
+    cupcakesList.on("click", ".delete-cupcake", deleteCupcake);
+});
